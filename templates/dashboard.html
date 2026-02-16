@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BudgetWise Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div class="nav-left">
+        <h2>💰 BudgetWise</h2>
+    </div>
+
+    <div class="nav-center">
+        <a href="/dashboard">Dashboard</a>
+        <a href="#">Expenses</a>
+        <a href="#">Budget</a>
+        <a href="#">Reports</a>
+        <a href="#">AI Forecast</a>
+    </div>
+
+    <div class="nav-right">
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+</div>
+
+
+<!-- GRAPH SECTION -->
+<div class="graph-container">
+    <h3>Monthly Expense Overview</h3>
+    <canvas id="expenseChart"></canvas>
+</div>
+
+
+<!-- Summary Cards (Row 1) -->
+<div class="summary-container">
+
+    <div class="summary-card">
+        <h3>Monthly Budget</h3>
+        <input type="number" id="budget" placeholder="Set Budget">
+        <button onclick="setBudget()">Set Budget</button>
+        <h2 id="totalBudget">₹0</h2>
+    </div>
+
+    <div class="summary-card">
+        <h3>Total Expenses</h3>
+        <h2 id="totalExpenses">₹0</h2>
+    </div>
+
+    <div class="summary-card">
+        <h3>Remaining Balance</h3>
+        <h2 id="remainingBalance">₹0</h2>
+    </div>
+
+</div>
+
+
+<!-- Main Content -->
+<div class="main-container">
+
+    <!-- Row 2 -->
+    <div class="card">
+        <h3>Add Expense</h3>
+        <input type="number" id="amount" placeholder="Amount">
+        <input type="text" id="category" placeholder="Category">
+        <input type="number" id="month" placeholder="Month (1-12)">
+        <button onclick="addExpense()">Add Expense</button>
+    </div>
+
+    <div class="card">
+        <h3>Recent Transactions</h3>
+        <ul id="recentList"></ul>
+    </div>
+
+    <div class="card">
+        <h3>All Expenses</h3>
+        <button onclick="loadExpenses()">Load Expenses</button>
+        <ul id="expenseList"></ul>
+    </div>
+
+    <!-- Row 3 -->
+    <div class="card forecast-card">
+        <h3>AI Forecast</h3>
+        <button onclick="forecast()">Predict Next Month</button>
+        <h2 id="prediction"></h2>
+    </div>
+
+</div>
+
+</body>
+</html>
