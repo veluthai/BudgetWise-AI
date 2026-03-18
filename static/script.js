@@ -1,12 +1,12 @@
 // ----------------------
 // GLOBAL VALUES
 // ----------------------
-let totalBudget = 0;
-let totalExpenses = 0;
-
-// Monthly Chart Data
+let budgets = [];
+let savings = [];
 let monthlyData = [0,0,0,0,0,0,0,0,0,0,0,0];
+
 let chart = null;
+let currentMonth = null;
 
 
 // ----------------------
@@ -26,11 +26,7 @@ function signup() {
     fetch("/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            username: username,
-            email: email,
-            password: password
-        })
+        body: JSON.stringify({ username, email, password })
     })
     .then(res => res.json())
     .then(data => {
@@ -69,9 +65,33 @@ function login() {
 // SET BUDGET
 // ----------------------
 function setBudget() {
-    totalBudget = parseFloat(document.getElementById("budget").value) || 0;
-    document.getElementById("totalBudget").innerText = "₹" + totalBudget;
+    const amount = parseFloat(document.getElementById("budget").value);
+    const month = parseInt(document.getElementById("budgetMonth").value);
+
+    if (!amount || !month) {
+        alert("Enter budget and month");
+        return;
+    }
+
+    const budgetData = { amount, month };
+    budgets.push(budgetData);
+
+    currentMonth = month;
+
+    updateBudgetDisplay(budgetData);
     updateBalance();
+
+    document.getElementById("budget").value = "";
+    document.getElementById("budgetMonth").value = "";
+}
+
+function updateBudgetDisplay(newBudget) {
+    document.getElementById("totalBudget").innerText = "₹" + newBudget.amount;
+
+    const list = document.getElementById("budgetList");
+    const li = document.createElement("li");
+    li.textContent = `Month ${newBudget.month} - ₹${newBudget.amount}`;
+    list.appendChild(li);
 }
 
 
@@ -92,82 +112,64 @@ function addExpense() {
     fetch("/add_expense", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            amount: amount,
-            category: category,
-            month: month
-        })
+        body: JSON.stringify({ amount, category, month })
     })
     .then(res => res.json())
     .then(data => {
+
         alert(data.message);
 
-        // Update totals
-        totalExpenses += amount;
-        document.getElementById("totalExpenses").innerText = "₹" + totalExpenses;
-        updateBalance();
+        currentMonth = month;
 
-        // Update Monthly Chart
-        if (chart) {
-            monthlyData[month - 1] += amount;
-            chart.update();
-        }
+        // Update chart data
+        monthlyData[month - 1] += amount;
+
+        // Update UI
+        updateBalance();
 
         // Recent Transactions
         let list = document.getElementById("recentList");
-        if (list) {
-            let li = document.createElement("li");
-            li.innerText = category + " - ₹" + amount;
-            list.prepend(li);
-        }
+        let li = document.createElement("li");
+        li.innerText = category + " - ₹" + amount;
+        list.prepend(li);
 
         // Clear inputs
         document.getElementById("amount").value = "";
         document.getElementById("category").value = "";
         document.getElementById("month").value = "";
+
+        if (chart) chart.update();
     });
 }
 
 
 // ----------------------
-// LOAD ALL EXPENSES
+// LOAD EXPENSES
 // ----------------------
 function loadExpenses() {
+
     fetch("/get_expenses")
     .then(res => res.json())
     .then(data => {
+
         let list = document.getElementById("expenseList");
-        if (!list) return;
-
         list.innerHTML = "";
-        totalExpenses = 0;
 
-        // Reset chart data
         monthlyData = [0,0,0,0,0,0,0,0,0,0,0,0];
 
-        if (data.length === 0) {
-            list.innerHTML = "<li>No expenses found</li>";
-            return;
-        }
-
         data.forEach(e => {
-            totalExpenses += e.amount;
 
-            // Add to list
             list.innerHTML += `
                 <li>${e.category} - ₹${e.amount} (Month ${e.month})</li>
             `;
 
-            // Update monthly chart data
             if (e.month >= 1 && e.month <= 12) {
                 monthlyData[e.month - 1] += e.amount;
             }
         });
 
-        document.getElementById("totalExpenses").innerText = "₹" + totalExpenses;
         updateBalance();
 
-        // Refresh chart
         if (chart) {
             chart.data.datasets[0].data = monthlyData;
             chart.update();
@@ -177,14 +179,83 @@ function loadExpenses() {
 
 
 // ----------------------
-// UPDATE BALANCE
+// ADD SAVINGS ✅
+// ----------------------
+function addSaving() {
+
+    const amount = parseFloat(document.getElementById("savingAmount").value);
+    const month = parseInt(document.getElementById("savingMonth").value);
+
+    if (!amount || !month) {
+        alert("Enter saving amount and month");
+        return;
+    }
+
+    const savingData = { amount, month };
+
+    savings.push(savingData);
+
+    currentMonth = month;
+
+    updateSavings(savingData);
+    updateBalance();
+
+    document.getElementById("savingAmount").value = "";
+    document.getElementById("savingMonth").value = "";
+}
+
+
+// ----------------------
+// UPDATE SAVINGS
+// ----------------------
+function updateSavings(newSaving) {
+
+    const list = document.getElementById("savingList");
+
+    const li = document.createElement("li");
+    li.textContent = `Month ${newSaving.month} - ₹${newSaving.amount}`;
+    list.appendChild(li);
+
+    if (!currentMonth) return;
+
+    let monthSaving = 0;
+
+    savings.forEach(s => {
+        if (parseInt(s.month) === currentMonth) {
+            monthSaving += s.amount;
+        }
+    });
+
+    document.getElementById("totalSavings").innerText = "₹" + monthSaving;
+}
+
+
+// ----------------------
+// UPDATE BALANCE ✅ FINAL
 // ----------------------
 function updateBalance() {
-    let remaining = totalBudget - totalExpenses;
-    let el = document.getElementById("remainingBalance");
-    if (el) {
-        el.innerText = "₹" + remaining;
-    }
+
+    if (!currentMonth) return;
+
+    const budgetData = budgets.find(b => b.month === currentMonth);
+    const budget = budgetData ? budgetData.amount : 0;
+
+    let monthExpense = monthlyData[currentMonth - 1] || 0;
+
+    let monthSaving = 0;
+    savings.forEach(s => {
+        if (parseInt(s.month) === currentMonth) {
+            monthSaving += s.amount;
+        }
+    });
+
+    document.getElementById("totalBudget").innerText = "₹" + budget;
+    document.getElementById("totalExpenses").innerText = "₹" + monthExpense;
+    document.getElementById("totalSavings").innerText = "₹" + monthSaving;
+
+    let remaining = budget - monthExpense - monthSaving;
+
+    document.getElementById("remainingBalance").innerText = "₹" + remaining;
 }
 
 
@@ -202,66 +273,31 @@ function forecast() {
 
 
 // ----------------------
-// CHART (Chart.js)
+// CHART
 // ----------------------
 function loadChart() {
-    const canvas = document.getElementById("expenseChart");
-    if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = document.getElementById("expenseChart").getContext("2d");
 
     chart = new Chart(ctx, {
         type: "bar",
         data: {
-            labels: [
-                "Jan","Feb","Mar","Apr","May","Jun",
-                "Jul","Aug","Sep","Oct","Nov","Dec"
-            ],
+            labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
             datasets: [{
                 label: "Monthly Expenses",
                 data: monthlyData,
-                backgroundColor: "pink",   // Bar color
+                backgroundColor: "pink",
                 borderColor: "black",
                 borderWidth: 1
             }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    ticks: {
-                        color: "black"   // X-axis month names
-                    },
-                    grid: {
-                        color: "#e0e0e0"
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: "black"   // Y-axis numbers
-                    },
-                    grid: {
-                        color: "#e0e0e0"
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: "black"   // Legend text
-                    }
-                }
-            }
         }
     });
 
-    // Load existing DB data
     loadExpenses();
 }
 
 
-
-// Load chart after page loads
+// ----------------------
+// LOAD
+// ----------------------
 window.addEventListener("DOMContentLoaded", loadChart);

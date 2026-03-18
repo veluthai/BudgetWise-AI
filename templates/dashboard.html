@@ -42,11 +42,19 @@
 <div class="summary-container">
 
     <div class="summary-card">
-        <h3>Monthly Budget</h3>
-        <input type="number" id="budget" placeholder="Set Budget">
-        <button onclick="setBudget()">Set Budget</button>
-        <h2 id="totalBudget">₹0</h2>
-    </div>
+    <h3>Monthly Budget</h3>
+
+    <input type="number" id="budget" placeholder="Set Budget">
+    <input type="number" id="budgetMonth" placeholder="Month (1-12)">
+
+    <button onclick="setBudget()">Set Budget</button>
+
+    <h2 id="totalBudget">₹0</h2>
+
+    <!-- Show Month-wise Budget -->
+    <ul id="budgetList"></ul>
+</div>
+
 
     <div class="summary-card">
         <h3>Total Expenses</h3>
@@ -85,11 +93,28 @@
     </div>
 
     <!-- Row 3 -->
-    <div class="card forecast-card">
-        <h3>AI Forecast</h3>
-        <button onclick="forecast()">Predict Next Month</button>
-        <h2 id="prediction"></h2>
-    </div>
+    <!-- Row 3 -->
+<div class="card">
+    <h3>AI Forecast</h3>
+    <button onclick="forecast()">Predict Next Month</button>
+    <h2 id="prediction"></h2>
+</div>
+
+<div class="card">
+    <h3>Total Savings</h3>
+    <h2 id="totalSavings">₹0</h2>
+    <ul id="savingList"></ul>
+</div>
+
+<div class="card">
+    <h3>Add Savings</h3>
+    <input type="number" id="savingAmount" placeholder="Saving Amount">
+    <input type="number" id="savingMonth" placeholder="Month (1-12)">
+    <button onclick="addSaving()">Add Saving</button>
+</div>
+
+
+
 
 </div>
 
