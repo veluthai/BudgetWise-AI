@@ -491,3 +491,34 @@ li {
     margin-bottom: 10px;
 }
 
+/* REPORT SECTION */
+.report-container {
+    padding: 20px 60px;
+}
+
+.report-card {
+    background: rgba(255,255,255,0.15);
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 400px;
+    margin: auto;
+}
+
+.report-card select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: none;
+}
+
+.report-result {
+    margin-top: 15px;
+    text-align: left;
+}
+
+.report-result p {
+    margin: 8px 0;
+    font-weight: 500;
+}

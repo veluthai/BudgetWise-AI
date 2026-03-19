@@ -12,7 +12,10 @@
         
         <input type="email" id="email" placeholder="Email">
 
-        <input type="password" id="password" placeholder="Password">
+        <input type="password" id="password" placeholder="Password"
+pattern="^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{6,}$"
+title="Must contain 1 uppercase, 1 special character, and minimum 6 characters">
+
 
         <input type="password" id="confirm_password" placeholder="Confirm Password">
 

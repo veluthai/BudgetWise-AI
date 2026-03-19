@@ -13,16 +13,28 @@ let currentMonth = null;
 // SIGNUP
 // ----------------------
 function signup() {
+
     const username = document.getElementById("username").value;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirm_password").value;
 
+    // 🔥 PASSWORD RULE (REGEX)
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{6,}$/;
+
+    // Check password match
     if (password !== confirmPassword) {
         alert("Passwords do not match!");
         return;
     }
 
+    // 🔥 VALIDATION CHECK
+    if (!passwordRegex.test(password)) {
+        alert("Password must contain:\n- At least 1 Uppercase letter\n- At least 1 Special character\n- Minimum 6 characters");
+        return;
+    }
+
+    // Continue signup
     fetch("/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -31,7 +43,7 @@ function signup() {
     .then(res => res.json())
     .then(data => {
         alert(data.message);
-        if (data.status === "success") {
+        if (data.message === "Signup Successful") {
             window.location.href = "/login";
         }
     });
@@ -65,6 +77,7 @@ function login() {
 // SET BUDGET
 // ----------------------
 function setBudget() {
+
     const amount = parseFloat(document.getElementById("budget").value);
     const month = parseInt(document.getElementById("budgetMonth").value);
 
@@ -73,25 +86,28 @@ function setBudget() {
         return;
     }
 
-    const budgetData = { amount, month };
-    budgets.push(budgetData);
+    fetch("/set_budget", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ amount, month })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
 
-    currentMonth = month;
+        // UI update
+        document.getElementById("totalBudget").innerText = "₹" + amount;
 
-    updateBudgetDisplay(budgetData);
-    updateBalance();
+        let list = document.getElementById("budgetList");
+        let li = document.createElement("li");
+        li.innerText = `Month ${month} - ₹${amount}`;
+        list.appendChild(li);
 
-    document.getElementById("budget").value = "";
-    document.getElementById("budgetMonth").value = "";
-}
-
-function updateBudgetDisplay(newBudget) {
-    document.getElementById("totalBudget").innerText = "₹" + newBudget.amount;
-
-    const list = document.getElementById("budgetList");
-    const li = document.createElement("li");
-    li.textContent = `Month ${newBudget.month} - ₹${newBudget.amount}`;
-    list.appendChild(li);
+        document.getElementById("budget").value = "";
+        document.getElementById("budgetMonth").value = "";
+    });
 }
 
 
@@ -191,17 +207,26 @@ function addSaving() {
         return;
     }
 
-    const savingData = { amount, month };
+    fetch("/add_saving", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ amount, month })
+    })
+    .then(res => res.json())
+    .then(data => {
 
-    savings.push(savingData);
+        alert(data.message);
 
-    currentMonth = month;
+        let list = document.getElementById("savingList");
+        let li = document.createElement("li");
+        li.innerText = `Month ${month} - ₹${amount}`;
+        list.appendChild(li);
 
-    updateSavings(savingData);
-    updateBalance();
-
-    document.getElementById("savingAmount").value = "";
-    document.getElementById("savingMonth").value = "";
+        document.getElementById("savingAmount").value = "";
+        document.getElementById("savingMonth").value = "";
+    });
 }
 
 
@@ -290,11 +315,65 @@ function loadChart() {
                 borderColor: "black",
                 borderWidth: 1
             }]
+        },
+
+        // 🔥 IMPORTANT PART
+        options: {
+            scales: {
+                x: {
+                    ticks: {
+                        color: "black"   // X-axis text color
+                    },
+                    grid: {
+                        color: "black"   // X-axis line color
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: "black"   // Y-axis text color
+                    },
+                    grid: {
+                        color: "black"   // Y-axis line color
+                    }
+                }
+            },
+
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "black" // legend text color
+                    }
+                }
+            }
         }
     });
 
     loadExpenses();
 }
+
+
+function generateReport() {
+
+    let month = document.getElementById("reportMonth").value;
+
+    if (!month) {
+        alert("Select month");
+        return;
+    }
+
+    fetch(`/get_report/${month}`)
+    .then(res => res.json())
+    .then(data => {
+
+        document.getElementById("reportBudget").innerText = "₹" + data.budget;
+        document.getElementById("reportExpenses").innerText = "₹" + data.expenses;
+        document.getElementById("reportSavings").innerText = "₹" + data.savings;
+        document.getElementById("reportRemaining").innerText = "₹" + data.remaining;
+
+    });
+}
+
+
 
 
 // ----------------------
