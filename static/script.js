@@ -173,18 +173,22 @@ function loadExpenses() {
 
         monthlyData = [0,0,0,0,0,0,0,0,0,0,0,0];
 
+        let totalExpense = 0;
+
         data.forEach(e => {
 
             list.innerHTML += `
                 <li>${e.category} - ₹${e.amount} (Month ${e.month})</li>
             `;
 
-            if (e.month >= 1 && e.month <= 12) {
-                monthlyData[e.month - 1] += e.amount;
-            }
+            monthlyData[e.month - 1] += Number(e.amount);
+
+            // Calculate total expenses
+            totalExpense += Number(e.amount);
         });
 
-        updateBalance();
+        // Show total expenses of all months
+        document.getElementById("totalExpenses").innerText = "₹" + totalExpense;
 
         if (chart) {
             chart.data.datasets[0].data = monthlyData;
